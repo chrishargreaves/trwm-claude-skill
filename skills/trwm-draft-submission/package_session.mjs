@@ -31,7 +31,7 @@ import { pathToFileURL } from 'node:url';
  * in three places (here, SKILL.md and references/session-format.md) and a
  * test asserts the three agree, so a bump cannot be applied to only one.
  */
-const SKILL_VERSION = '0.17.0';
+const SKILL_VERSION = '0.18.0';
 
 /* The session-state version this packager targets. See
  * references/session-format.md for what to do when the helper moves on. */
@@ -1645,7 +1645,11 @@ async function main(argv) {
       '            its recorded name. Accepts a local path or a URL, e.g.\n' +
       '            https://data.solveit-df.org/solve-it.json\n' +
       '  --strict  exit 1 if any check is reported. Off by default, because\n' +
-      '            most checks are for a person to judge, not errors.\n');
+      '            most checks are for a person to judge, not errors.\n' +
+      '  --version print the skill version and the helper version it targets.\n' +
+      '  --schema  print the draft format as a JSON Schema, to stdout.\n' +
+      '  --date    fix created/modified, so a run is reproducible. Used by the\n' +
+      '            tests; rarely wanted otherwise.\n');
     process.exit(2);
   }
   const outIdx = args.indexOf('--out');

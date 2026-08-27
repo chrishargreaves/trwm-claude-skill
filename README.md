@@ -211,7 +211,7 @@ in, so an archive cannot be mislabelled.
 
 ## Versions
 
-Skill version 0.17.0, targeting TRWM SOLVE-IT Helper 3.8.0, which is the
+Skill version 0.18.0, targeting TRWM SOLVE-IT Helper 3.8.0, which is the
 version currently deployed at <https://trwm.hargs.co.uk/>. The packager stamps
 the targeted version into the `version` field of every session file it writes.
 

@@ -11,6 +11,33 @@ minor and patch numbers, so 1.8.0 became 0.8.0. Nothing was ever released under
 the old numbering — there are no published archives and no GitHub releases — so
 the renumbering rewrites no history that anyone else can see.
 
+## [0.18.0] — unreleased
+
+**`SKILL.md` is now tested.** It is instructions to an agent, and most of it is
+judgement no test can check — but it also makes mechanical claims that drift
+silently. Rename a flag, renumber a stage, move a reference file, and the skill
+goes on telling an agent to do something that no longer works. Nothing caught
+that before.
+
+`test/skill-conformance.test.mjs` reads the claims out of `SKILL.md` rather
+than restating them, so the test cannot fall out of step with it in turn. It
+checks that the front matter names the folder the skill ships in, that every
+`references/` path and every entry in the Files section exists, that every flag
+the prose names is one the packager documents, that the stages are numbered
+from 1 with no gaps and every "stage N" cross-reference resolves, that every
+`See "…"` pointer names a real heading, and that the packaging and diagnostic
+commands run as written.
+
+Verified to bite: misspelling the front-matter name, renaming a reference file,
+renaming a flag in the prose only, misnumbering a stage, staling a section
+pointer, and renaming the Files section each make it fail.
+
+**The packager's usage text now documents `--version`, `--schema` and
+`--date`.** The conformance test found them: `SKILL.md` tells an agent to run
+`--version` to find out which copy it has, and the tool's own help had never
+mentioned it, so anyone running the packager with no arguments could not learn
+it existed.
+
 ## [0.17.0] — unreleased
 
 Ten defects found by a code review of `package_session.mjs`, all reproduced

@@ -5,7 +5,7 @@ description: Draft a SOLVE-IT knowledge base submission — a technique, its res
 
 # Draft a TRWM submission
 
-**Skill version 0.17.0.** Targets TRWM SOLVE-IT Helper 3.8.0. Run
+**Skill version 0.18.0.** Targets TRWM SOLVE-IT Helper 3.8.0. Run
 `node <skill-dir>/package_session.mjs --version` to check what a given copy
 is. Both numbers are set in `package_session.mjs` and copied here by
 `npm run set-version` in the skill's repository, so this line is derived rather
