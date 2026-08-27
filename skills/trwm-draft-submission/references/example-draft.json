@@ -1,0 +1,174 @@
+{
+  "_note": "An illustration of the draft format, and the fixture the packager tests run against. The technique is a real gap in SOLVE-IT, but the weaknesses and mitigations here have NOT been through the TRWM method with a practitioner — do not submit this. Its shape is deliberately awkward: two results, a weakness with several error classes, a weakness with no causes, a mitigation shared between two weaknesses, a mitigation reused under a real DFM id, and a draft order that differs from the order things aggregate in. DFM-1027 is a genuine mitigation and the text is its exact name — see the 'Never rename an existing mitigation' rule in SKILL.md.",
+  "sessionName": "File type associations",
+  "authors": [],
+  "resultsNotes": "",
+  "technique": {
+    "id": "DFT-XXXX",
+    "name": "Extract file type associations",
+    "description": "Examination of the operating system structures that record which application is registered to open files of a given type, producing the mapping between file types and their registered handlers.",
+    "synonyms": [
+      "Default application examination",
+      "Handler association extraction"
+    ],
+    "details": "Associations are recorded by the operating system rather than by the application, and are held separately from the application's own configuration. On Windows they are held in the registry, with machine-wide and per-user scopes that can disagree; on macOS they are held in the Launch Services database. An association records which application the operating system would launch for a file type. It does not record whether that application can decode the file's content, and the two are frequently conflated.",
+    "examples": [
+      "Windows registry HKCR and per-user FileExts association keys",
+      "macOS Launch Services database (lsregister -dump)"
+    ],
+    "inputClasses": [
+      "https://ontology.solveit-df.org/solveit/observable/FileSet"
+    ],
+    "parentTechnique": "",
+    "references": [
+      {
+        "DFCite_id": "DFCite-1060",
+        "citation_text": "",
+        "relevance_summary_280": "Sets out the abstract tool model this technique's inputs and outputs are described against."
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "DFTR1",
+      "name": "File type association records",
+      "description": "The mapping from a file type, usually identified by extension, to the application registered to open it.",
+      "ontologyOutputClasses": [
+        "https://ontology.unifiedcyberontology.org/uco/configuration/Configuration",
+        "https://ontology.unifiedcyberontology.org/uco/configuration/ConfigurationEntry"
+      ],
+      "ontologyInputClasses": []
+    },
+    {
+      "id": "DFTR2",
+      "name": "Registered handler applications",
+      "description": "The set of applications referred to by the association records, as installed paths or identifiers.",
+      "ontologyOutputClasses": [
+        "https://ontology.unifiedcyberontology.org/uco/observable/Application"
+      ],
+      "ontologyInputClasses": []
+    }
+  ],
+  "weaknesses": [
+    {
+      "result": "DFTR1",
+      "errorClasses": [
+        "ASTM_INCOMP"
+      ],
+      "effect": "The set of file type associations is incomplete",
+      "causes": [
+        {
+          "text": "The set of file type associations is incomplete because only machine-wide associations were examined and per-user overrides were not",
+          "description": "Where the two scopes disagree, the per-user setting is the one that takes effect for that account.",
+          "references": [],
+          "mitigations": [
+            {
+              "text": "Examine both machine-wide and per-user association stores",
+              "existingId": "",
+              "description": ""
+            }
+          ]
+        },
+        {
+          "text": "The set of file type associations is incomplete because associations held outside the examined store were not considered",
+          "description": "",
+          "references": [],
+          "mitigations": [
+            {
+              "text": "Enumerate every location the operating system records associations in before extraction",
+              "existingId": "",
+              "description": ""
+            }
+          ]
+        },
+        {
+          "text": "The set of file type associations is incomplete because the tool used failed to parse the association store",
+          "description": "",
+          "references": [],
+          "mitigations": [
+            {
+              "text": "Use dual tool verification",
+              "existingId": "DFM-1027",
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "result": "DFTR2",
+      "errorClasses": [
+        "ASTM_INAC_AS",
+        "ASTM_MISINT"
+      ],
+      "effect": "An association is attributed to the wrong user account",
+      "causes": [
+        {
+          "text": "An association is attributed to the wrong user account because per-user associations were extracted without recording which profile they came from",
+          "description": "",
+          "references": [],
+          "mitigations": [
+            {
+              "text": "Record the user profile each association was extracted from",
+              "existingId": "",
+              "description": ""
+            },
+            {
+              "text": "Examine both machine-wide and per-user association stores",
+              "existingId": "",
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "result": "DFTR1",
+      "errorClasses": [
+        "ASTM_MISINT"
+      ],
+      "effect": "An association is read as showing that the registered application can render the file's content",
+      "causes": [
+        {
+          "text": "An association is read as showing that the registered application can render the file's content because the record names the handler the operating system would launch and says nothing about decoding",
+          "description": "A system can be configured to open a file type with a player that then fails to render it. The association supports only the narrower claim that software registered to handle the type is present.",
+          "references": [],
+          "mitigations": [
+            {
+              "text": "State in the report that an association records the registered handler and not the ability to decode the content",
+              "existingId": "",
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "result": "DFTR2",
+      "errorClasses": [
+        "ASTM_INCOMP"
+      ],
+      "effect": "A registered handler cannot be resolved to an installed application",
+      "causes": [],
+      "mitigations": [
+        {
+          "text": "Reconcile each registered handler against the installed software inventory and record the ones that do not resolve",
+          "existingId": "",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "mitigationDetails": [
+    {
+      "text": "Examine both machine-wide and per-user association stores",
+      "description": "Extract associations from every scope the operating system supports, and record which scope each came from, so that a per-user override is not missed and is not mistaken for a machine-wide setting.",
+      "references": []
+    },
+    {
+      "text": "State in the report that an association records the registered handler and not the ability to decode the content",
+      "description": "Where an association is offered in support of a capability claim, state explicitly what it does and does not establish, so the reader does not read a handler registration as a demonstration that the content could be rendered.",
+      "references": []
+    }
+  ]
+}

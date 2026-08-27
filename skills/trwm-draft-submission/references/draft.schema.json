@@ -1,0 +1,303 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/chrishargreaves/trwm-claude-skill/main/skills/trwm-draft-submission/references/draft.schema.json",
+  "title": "trwm-draft-submission authoring draft",
+  "description": "The draft package_session.mjs reads. Not the TRWM session file: that is generated from this and must never be hand-written. Generated from DRAFT_SPEC in package_session.mjs — edit that, not this file.",
+  "type": "object",
+  "properties": {
+    "sessionName": {
+      "type": "string"
+    },
+    "authors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "resultsNotes": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "technique": {
+      "$ref": "#/$defs/technique"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/results"
+      },
+      "minItems": 1
+    },
+    "weaknesses": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/weaknesses"
+      }
+    },
+    "mitigationDetails": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mitigationDetails"
+      }
+    }
+  },
+  "required": [
+    "technique",
+    "results",
+    "weaknesses"
+  ],
+  "patternProperties": {
+    "^_": true
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "technique": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "synonyms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "details": {
+          "type": "string"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "inputClasses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "parentTechnique": {
+          "type": "string",
+          "pattern": "^(DFT-[0-9]+(\\.[0-9]+)*)?$"
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "description"
+      ],
+      "patternProperties": {
+        "^_": true
+      },
+      "additionalProperties": false
+    },
+    "results": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^DFTR[0-9]+$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ontologyOutputClasses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ontologyInputClasses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_": true
+      },
+      "additionalProperties": false
+    },
+    "weaknesses": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string"
+        },
+        "errorClasses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ASTM_INCOMP",
+              "ASTM_INAC_EX",
+              "ASTM_INAC_AS",
+              "ASTM_INAC_ALT",
+              "ASTM_INAC_COR",
+              "ASTM_MISINT"
+            ]
+          },
+          "minItems": 1
+        },
+        "effect": {
+          "type": "string"
+        },
+        "causes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/causes"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "mitigations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mitigations"
+          }
+        }
+      },
+      "required": [
+        "errorClasses",
+        "effect"
+      ],
+      "patternProperties": {
+        "^_": true
+      },
+      "additionalProperties": false
+    },
+    "causes": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "mitigations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mitigations"
+          }
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "patternProperties": {
+        "^_": true
+      },
+      "additionalProperties": false
+    },
+    "mitigations": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "existingId": {
+          "type": "string",
+          "pattern": "^(DFM-[0-9]+(\\.[0-9]+)*)?$"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "patternProperties": {
+        "^_": true
+      },
+      "additionalProperties": false
+    },
+    "mitigationDetails": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "technique": {
+          "type": "string",
+          "pattern": "^(DFT-[0-9]+(\\.[0-9]+)*)?$"
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "patternProperties": {
+        "^_": true
+      },
+      "additionalProperties": false
+    },
+    "reference": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "DFCite_id": {
+              "type": "string",
+              "pattern": "^(DFCite-[0-9]+)?$"
+            },
+            "citation_text": {
+              "type": "string"
+            },
+            "relevance_summary_280": {
+              "type": "string",
+              "maxLength": 280
+            }
+          },
+          "patternProperties": {
+            "^_": true
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

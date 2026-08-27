@@ -1,0 +1,12 @@
+# Skill release archives, written by package_skill.sh and by the release tests
+/dist/
+
+# Stray Playwright output, if a run is ever started from this directory
+/test-results/
+/playwright-report/
+
+# Node
+node_modules/
+
+# macOS
+.DS_Store

@@ -1,0 +1,33 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # No dependencies to install: the packager and the tests use only the
+      # Node standard library, and package_skill.sh uses zip and unzip, which
+      # the runner already has.
+      - name: Run tests
+        run: |
+          set -o pipefail
+          node --test 2>&1 | tee test-output.txt
+
+      # node --test exits 0 when it discovers no test files at all, so a
+      # green run is not by itself evidence that anything was tested.
+      - name: Check the suite actually ran
+        run: |
+          grep -q '^# fail 0$' test-output.txt || { echo "::error::tests failed"; exit 1; }
+          if grep -q '^# pass 0$' test-output.txt; then
+            echo "::error::no tests were discovered"; exit 1
+          fi
+          grep -E '^# (tests|pass|fail)' test-output.txt
