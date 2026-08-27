@@ -5,7 +5,7 @@ description: Draft a SOLVE-IT knowledge base submission — a technique, its res
 
 # Draft a TRWM submission
 
-**Skill version 0.19.0.** Targets TRWM SOLVE-IT Helper 3.8.0. Run
+**Skill version 0.20.0.** Targets TRWM SOLVE-IT Helper 3.8.0. Run
 `node <skill-dir>/package_session.mjs --version` to check what a given copy
 is. Both numbers are set in `package_session.mjs` and copied here by
 `npm run set-version` in the skill's repository, so this line is derived rather
@@ -314,6 +314,13 @@ Short and conversational, not a form. Establish:
 - Whether it is a technique in its own right or a sub-technique of something
   existing.
 
+That last one is not settled here for good. It comes back at stage 4, because a
+long result list is often the same question arriving in disguise — several
+outputs that share no input, no artifacts and no remedies are usually several
+techniques rather than one technique producing several things. Leave the
+question open rather than closing it, and say in the note that stage 4 may
+reopen it.
+
 Ask about anything genuinely undetermined. Do not ask about things the source
 document or the earlier conversation has already settled.
 
@@ -384,6 +391,29 @@ have one or two.
 For each result, record a name, a description, and its CASE output class IRIs,
 chosen as described under "Choosing classes" above.
 
+### A result does not survive into the knowledge base
+
+Establish this before proposing a list, because it changes what a result has to
+be worth.
+
+Nothing downstream records results. `parse_trwm_submission.py` reads
+`techniques`, `weaknesses` and `mitigations`, and never looks at them; the
+technique files in the repository have no field to hold them. Every weakness
+lands on the technique whatever result it was gathered under. A result is
+drafting scaffolding, and it dissolves at the repository boundary.
+
+So a result is not a claim about how the technique's output is structured. It
+is a decision about how the weakness pass is run, and it costs six prompts —
+one per error class — every time. Its only justification is that asking about
+*that* output surfaces failures nobody reaches asking about the others. A
+background configured to rotate through a folder is one: it arrives only if
+someone is asked about the background as a thing in its own right, and it is
+invisible from a prompt about the desktop as a whole.
+
+That cuts both ways. Four results is twenty-four prompts, and a result that
+produces nothing the others would have produced has spent six of them for
+nothing.
+
 ### Test each proposed result before asking for approval
 
 Splitting one output into several results because it has several parts is the
@@ -398,8 +428,12 @@ answer to the user rather than deciding silently:
 - **Is it a subcomponent of an output already described?** A field, an
   attribute, or a part of a structure is usually not a result in its own
   right, even when extracting it can fail in ways the parent cannot.
+- **Would its remedies differ?** Two outputs that fail differently but are put
+  right the same way are one result described at two levels of detail. This is
+  the question the retrospective check below measures, and asking it now is
+  cheaper than being told at stage 9.
 
-Neither question settles it — whether to split is genuinely debatable, and a
+None of the three settles it — whether to split is genuinely debatable, and a
 part that fails in its own ways can deserve its own result and its own
 weaknesses. The point is that the question is asked and answered before the
 list is approved, not discovered afterwards.
@@ -408,7 +442,35 @@ Say so explicitly when asking for approval: **the result list fixes the shape
 of the weakness stage.** Removing a result later means the weaknesses written
 against it have to be reassigned or discarded, so it is worth a moment now.
 Do not announce a total number of prompts for stage 5 until the list is
-settled.
+settled — and **do announce it once it is**, because six prompts per result is
+a cost the user is entitled to see before it is spent rather than at prompt
+nine.
+
+### If the results are really separate pieces of work
+
+Several results that share nothing — different inputs, different artifacts,
+different remedies — are a sign that this is not one technique with several
+outputs. Go back to the sub-technique question at stage 2 and settle it there,
+rather than carrying four unrelated results through the whole weakness pass.
+
+The test is what the investigator test does for names: read
+*"As an investigator, I want to [name of a technique doing only this result]"*
+aloud. Where each reads naturally as a separate job, `parentTechnique` and a
+set of sub-techniques is the better shape. Where they only make sense as parts
+of one examination — one input, one question, one occasion — they are results,
+and they stay results.
+
+### The retrospective check
+
+The three questions above are asked while the list is being proposed, when
+there is nothing yet to test them against. The evidence arrives at stage 7,
+when each result has mitigations.
+
+The packager reports it: where most of one result's mitigations also appear
+under another, it says so. Treat it as a question rather than a fault — the
+result may still be right, and the practitioner may have a reason for keeping
+it that the mitigations do not show. Put it to the user with the number, and
+record which way it went in the rationale note.
 
 ## Stage 5 — W, the weaknesses
 
@@ -894,6 +956,11 @@ later. Do not invent a `DFCite-` id for a new source.
      weakness and merge, a cause that does not begin with its effect, two
      mitigations differing only in punctuation, and, under `--kb`, a reused
      mitigation whose text does not match its recorded name.
+
+     One is a question rather than a loss: two results whose mitigations
+     largely coincide, which is the retrospective check described at stage 4.
+     It cannot be answered by the packager and it cannot be answered by you —
+     put the number to the user, take their decision, and record it.
    - `note:` — something to confirm rather than fix, such as a mitigation
      being reused under an existing `DFM-` id. Show these and let the user
      check them; do not treat them as errors.

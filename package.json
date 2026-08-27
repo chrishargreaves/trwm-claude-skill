@@ -1,6 +1,6 @@
 {
   "name": "trwm-draft-submission-skill",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "A skill that drafts a SOLVE-IT knowledge base submission through the TRWM-AC method, for Claude Code and the Claude desktop and web applications",
   "license": "Apache-2.0",
   "private": true,

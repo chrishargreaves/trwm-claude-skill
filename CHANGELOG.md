@@ -11,7 +11,86 @@ minor and patch numbers, so 1.8.0 became 0.8.0. Nothing was ever released under
 the old numbering — there are no published archives and no GitHub releases — so
 the renumbering rewrites no history that anyone else can see.
 
-## [0.19.0] — unreleased
+Headings carry the version and nothing else. Whether a version shipped is
+recorded by the GitHub releases and the tags, which is the only place that can
+answer it correctly: a date written here says when the notes were written, not
+when anyone could install the thing. Releasing is `git tag v<version>` and a
+push, and `.github/workflows/release.yml` does the rest — it refuses a tag that
+disagrees with the version the packager reports, or one with no section here.
+
+## [0.20.0]
+
+Three changes from a second unattended run, again with a separate agent playing
+the practitioner, and this time starting from a source document — [issue
+#458][458], which carried a technique record, classes, two results and a
+reference, but no weaknesses or mitigations. The run produced a session file
+that imports and validates. What it produced besides that was a question about
+results that the skill had no way to answer.
+
+**The skill now says that a result does not survive into the knowledge base.**
+`parse_trwm_submission.py` reads `techniques`, `weaknesses` and `mitigations`,
+and never looks at results; the technique files have no field to hold them.
+Every weakness lands on the technique whatever result it was gathered under. So
+a result is drafting scaffolding that dissolves at the repository boundary, and
+it costs six prompts — one per error class — every time. Stage 4 said none of
+this, which left the result list reading as a claim about the structure of the
+output rather than as a decision about how to run the weakness pass. It now
+says it, and it says the arithmetic out loud: four results is twenty-four
+prompts, and a result producing nothing the others would have produced has
+spent six of them for nothing. Stage 4 also now tells the drafter to announce
+the total once the list is settled, having previously only forbidden announcing
+it before.
+
+**The packager reports two results whose mitigations largely coincide.** Stage 4
+had two tests for whether a candidate is really its own result, and both are
+applied while the list is being proposed — before any weakness exists, so with
+no evidence to test against. The evidence arrives at stage 7, when each result
+has mitigations, and nothing looked at it. In the run, one of four results
+earned two mitigations of fifteen that no other result also carried, and shared
+71% of them with a neighbour; the split was defended on the grounds that the
+two are different surfaces, which may well be right, but nobody was in a
+position to weigh that against what the remedies showed. The check is
+deliberately retrospective and is a question rather than a fault: it reports the
+number and stage 9 puts it to the user. A result whose every mitigation appears
+elsewhere is named separately, in stronger terms.
+
+It lives in its own `draftingChecks()` rather than in `selfCheck()`, for the
+reason `knowledgeBaseChecks()` is separate: `--check` exists to diagnose a
+session that will not load, and a question about the result list is not a defect
+in the file. Running it there made a valid session exit 1.
+
+**Stage 2's sub-technique question now stays open until stage 4.** A long result
+list is frequently that question arriving in disguise — several outputs sharing
+no input, no artifacts and no remedies are usually several techniques rather
+than one technique producing several things. Stage 2 asked about
+`parentTechnique` once and nothing revisited it however the result list grew.
+Stage 4 now reopens it, with the investigator test applied to each result as
+though it were a technique of its own.
+
+Separately, **the repository can now publish a release.** `package_skill.sh`
+built the archive and nothing published it, so there were no tags and no
+releases, and every changelog heading said "unreleased" — which was true, and
+was going to stay true by default. `.github/workflows/release.yml` runs on a
+`v*` tag: it runs the suite, refuses a tag that disagrees with the version the
+packager reports, refuses one with no changelog section, builds the archive and
+publishes the release with that section as its notes.
+
+The tag check is the one that earns its place. The version comes from
+`SKILL_VERSION` and `package_skill.sh` names the archive from it, so a tag
+saying otherwise would attach an archive labelled one version to a release
+called another, and nothing downstream would notice.
+
+The "unreleased" markers are gone from every heading, which now carry the
+version alone. Whether a version shipped is recorded by the tags and the
+releases; a date in the changelog says when the notes were written. Three tests
+hold the changelog to it — that a section exists for the current version, that
+it is not empty, and that no heading carries anything but a version — so a
+version bump that forgets the changelog fails at `npm test` rather than at
+`git push --tags`.
+
+[458]: https://github.com/SOLVE-IT-DF/solve-it/issues/458
+
+## [0.19.0]
 
 Four changes from an unattended run of the skill against a real proposal —
 metadata inside video and audio files — drafted end to end with a separate
@@ -53,7 +132,7 @@ The two cases are now separate, and the instruction to say where the working
 files are has moved to the step that tells the user things rather than the step
 that picks a location.
 
-## [0.18.0] — unreleased
+## [0.18.0]
 
 **`SKILL.md` is now tested.** It is instructions to an agent, and most of it is
 judgement no test can check — but it also makes mechanical claims that drift
@@ -80,7 +159,7 @@ pointer, and renaming the Files section each make it fail.
 mentioned it, so anyone running the packager with no arguments could not learn
 it existed.
 
-## [0.17.0] — unreleased
+## [0.17.0]
 
 Ten defects found by a code review of `package_session.mjs`, all reproduced
 before being fixed and each now covered by a regression test. Every fix was
@@ -134,7 +213,7 @@ The rest:
 - `--repair` could never report a container as "missing", only as "not an
   array", because the value was overwritten before the message was built.
 
-## [0.16.0] — unreleased
+## [0.16.0]
 
 **Installing now covers both routes.** It described copying the folder into a
 `.claude/skills/` directory, which is the Claude Code route, and said nothing
@@ -152,7 +231,7 @@ The section also states what the skill needs to run in either case: Node 18 or
 later with no dependencies, a route to the knowledge base, and reachable
 ontology namespaces for verifying a class IRI.
 
-## [0.15.0] — unreleased
+## [0.15.0]
 
 Until now nothing checked the session the packager produced. The draft was
 validated, the session was assembled by code and pruned to the keys the helper
@@ -199,7 +278,7 @@ broken in one specific way, and fails if the two disagree. Removing the enum
 check, the pattern check, or the validator's body all make that test fail, so
 it is known to bite rather than assumed to.
 
-## [0.14.0] — unreleased
+## [0.14.0]
 
 **A "Where this skill is running" section, and a correction to stage 9.**
 0.7.0 told the drafter to write the working files to a `working/` directory and
@@ -231,7 +310,7 @@ that is not possible to run without it and **say in the report that the
 identifier checks did not run**. An absent check the user knows about is a
 different thing from one they assume happened.
 
-## [0.13.0] — unreleased
+## [0.13.0]
 
 **A generated relevance summary is now a draft to be corrected, not an
 answer.** The rule already allowed one where the source had been read. That
@@ -253,7 +332,7 @@ exactly like one naming the right section, so it is harder to catch than an
 empty field, and it stays in the knowledge base for everyone who reuses the
 entry.
 
-## [0.12.0] — unreleased
+## [0.12.0]
 
 **A "Reaching the ontologies" section, alongside the one for the knowledge
 base.** The skill required every class IRI to be verified before it was
@@ -277,7 +356,7 @@ there. UCO and CASE sources sit under `ontology/` in their own repositories.
 Where the ontologies cannot be reached, the class fields are left empty and the
 skill says so. An empty field is a visible gap; an unverified IRI is not.
 
-## [0.11.0] — unreleased
+## [0.11.0]
 
 **Targets TRWM SOLVE-IT Helper 3.8.0**, which added a top-level `rationale`
 field to the session format. The helper carries it into the exported bundle
@@ -302,7 +381,7 @@ the whole draft is under review anyway, and once more at stage 9 if anything is
 still open. Batched at a review point, five deferred decisions cost one reply;
 raised as they arise, they cost five interruptions and may still go unanswered.
 
-## [0.10.0] — unreleased
+## [0.10.0]
 
 **The skill no longer implies it can produce a GitHub submission.** The section
 was called "If a GitHub submission is asked for", which read as though a
@@ -321,7 +400,7 @@ recommended, and the skill should say so rather than quietly comply; and that
 rationale handed over before that review is provisional, because it records
 decisions taken against a draft nobody has looked at yet.
 
-## [0.9.0] — unreleased
+## [0.9.0]
 
 **"Never show a bare identifier" now requires the recorded name, copied
 exactly.** The rule already said to put an id's name in brackets after it, and
@@ -360,7 +439,7 @@ nothing checked it.
 went; the maintenance notes moved into the README under "Working on the skill",
 where the person who needs them will look.
 
-## [0.8.0] — unreleased
+## [0.8.0]
 
 **Targets TRWM SOLVE-IT Helper 3.7.0**, raised from 3.6.0 after the application
 began publishing its session format at

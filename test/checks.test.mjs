@@ -470,6 +470,84 @@ describe('regressions found by review', () => {
   });
 });
 
+describe('results whose mitigations coincide', () => {
+  // A result is drafting scaffolding — nothing downstream records it — so its
+  // only justification is that asking about that output surfaced failures the
+  // other results did not. These tests are about the retrospective check that
+  // measures whether it did.
+
+  /** A draft of two results, each carrying one weakness with the given mitigations. */
+  function twoResults(aMitigations, bMitigations) {
+    const weakness = (result, ordinal, mitigations) => ({
+      result,
+      errorClasses: ['ASTM_INCOMP'],
+      effect: `The ${ordinal} output is incomplete`,
+      causes: [{
+        text: `The ${ordinal} output is incomplete because the ${ordinal} store was not examined`,
+        mitigations: mitigations.map(text => ({ text })),
+      }],
+    });
+    return withDraft(d => {
+      d.weaknesses = [
+        weakness('DFTR1', 'first', aMitigations),
+        weakness('DFTR2', 'second', bMitigations),
+      ];
+      d.mitigationDetails = [];
+    });
+  }
+
+  const M = n => `Examine the store holding output ${n}`;
+  const overlap = c => c.filter(l => /mitigations under|also appear/.test(l));
+
+  test('two results sharing most of their mitigations are reported', () => {
+    // Three of four either way, which is 75% and over the limit.
+    const p = twoResults([M(1), M(2), M(3), M(4)], [M(1), M(2), M(3), M(5)]);
+    const found = overlap(run(p).checks);
+    assert.equal(found.length, 1);
+    assert.match(found[0], /75% of the mitigations under DFTR[12] also appear under DFTR[12]/);
+    assert.match(found[0], /parentTechnique/);
+  });
+
+  test('a result contributing nothing of its own is named as such', () => {
+    const p = twoResults([M(1), M(2), M(3)], [M(1), M(2), M(3), M(4), M(5)]);
+    const found = run(p).checks.filter(l => l.startsWith('every mitigation under'));
+    assert.equal(found.length, 1);
+    assert.match(found[0], /^every mitigation under DFTR1 also appears under another result/);
+  });
+
+  test('results with distinct mitigations are not reported', () => {
+    // The check has to be quiet where the split earned itself, or it is noise.
+    const p = twoResults([M(1), M(2), M(3), M(4)], [M(5), M(6), M(7), M(8)]);
+    assert.deepEqual(overlap(run(p).checks), []);
+  });
+
+  test('half-shared mitigations are under the limit and stay quiet', () => {
+    const p = twoResults([M(1), M(2), M(3), M(4)], [M(1), M(2), M(5), M(6)]);
+    assert.deepEqual(overlap(run(p).checks), []);
+  });
+
+  test('--check does not report it, and the session still passes', () => {
+    // `--check` diagnoses a session that will not load. A question about the
+    // result list is not a defect in the file, and reporting it there made a
+    // valid session exit 1.
+    const p = twoResults([M(1), M(2), M(3), M(4)], [M(1), M(2), M(3), M(5)]);
+    const out = join(mkdtempSync(join(tmpdir(), 'trwm-overlap-')), 'session.json');
+    spawnSync(process.execPath, [PACKAGER, p, '--out', out, '--date', '2026-01-01'],
+      { encoding: 'utf8' });
+    const r = spawnSync(process.execPath, [PACKAGER, '--check', out], { encoding: 'utf8' });
+    assert.equal(overlap(String(r.stderr).split('\n')).length, 0);
+    assert.match(String(r.stderr), /0 structural/);
+    assert.equal(r.status, 0);
+  });
+
+  test('two identical results too small to measure are not reported', () => {
+    // Containment means nothing on a set of two, where one shared mitigation
+    // is already half of it. The floor is deliberate and is documented here.
+    const p = twoResults([M(1), M(2)], [M(1), M(2)]);
+    assert.deepEqual(run(p).checks.filter(l => /mitigation/.test(l)), []);
+  });
+});
+
 describe('--strict', () => {
   test('a clean draft exits 0', () => {
     assert.equal(run(DRAFT_PATH, ['--strict']).status, 0);

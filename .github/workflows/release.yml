@@ -1,0 +1,88 @@
+name: release
+
+# Releasing is `git tag v<version>` and a push. Everything below is checking
+# that the tag is telling the truth before anything is published, because a
+# release is the one artefact that cannot be quietly corrected: people install
+# from it, and a mislabelled archive is indistinguishable from a correct one
+# until it fails to load.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # A release must not be publishable from a red commit. The test workflow
+      # runs on push, but a tag can be pushed to any commit, including one that
+      # never ran or one that failed, so this runs the suite again rather than
+      # trusting that it happened.
+      - name: Run tests
+        run: |
+          set -o pipefail
+          node --test 2>&1 | tee test-output.txt
+          grep -q '^# fail 0$' test-output.txt || { echo "::error::tests failed"; exit 1; }
+          if grep -q '^# pass 0$' test-output.txt; then
+            echo "::error::no tests were discovered"; exit 1
+          fi
+
+      # SKILL_VERSION in the packager is the source of the version, and
+      # package_skill.sh names the archive from it. A tag that disagrees would
+      # attach trwm-draft-submission-0.20.0.zip to a release called v0.21.0 and
+      # nothing downstream would notice.
+      - name: Check the tag matches the version the skill reports
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          SKILL=$(node skills/trwm-draft-submission/package_session.mjs --version \
+                  | sed -n 's/^[^ ]* \([0-9.]*\).*/\1/p')
+          echo "tag $TAG, skill $SKILL"
+          if [ "$TAG" != "$SKILL" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match the skill version ${SKILL}."
+            echo "::error::Set SKILL_VERSION in package_session.mjs, run npm run set-version, and retag."
+            exit 1
+          fi
+
+      # The release notes are the changelog section, so there has to be one. A
+      # release whose body is empty says nothing about what changed, and the
+      # omission is invisible once it is published.
+      - name: Extract the changelog section
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v v="## [$VERSION]" '
+            $0 == v { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error::CHANGELOG.md has no section '## [${VERSION}]', or it is empty."
+            exit 1
+          fi
+          echo "--- release notes ---"
+          cat release-notes.md
+
+      # package_skill.sh verifies its own output — the skill folder at the
+      # archive root, SKILL.md present, folder name matching the front matter —
+      # so a build that reports success has already been checked.
+      - name: Build the skill archive
+        run: ./package_skill.sh trwm-draft-submission
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/trwm-draft-submission-${VERSION}.zip" \
+            --title "trwm-draft-submission $VERSION" \
+            --notes-file release-notes.md

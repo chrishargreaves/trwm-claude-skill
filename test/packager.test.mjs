@@ -100,6 +100,41 @@ describe('versioning', () => {
     assert.equal(pkg.version, skill, 'package.json version');
   });
 
+  // The release workflow builds its notes from the changelog section for the
+  // tag, and refuses a tag with no section. Without this, that is discovered
+  // when a release is attempted rather than when the version is bumped, and
+  // the fix is a retag.
+  test('the changelog has a section for the current version', () => {
+    const { skill } = reportedVersions();
+    const changelog = readFileSync(join(process.cwd(), 'CHANGELOG.md'), 'utf8');
+    assert.ok(
+      changelog.includes(`\n## [${skill}]\n`),
+      `CHANGELOG.md has no "## [${skill}]" section`
+    );
+  });
+
+  test('changelog headings carry the version and nothing else', () => {
+    // Whether a version shipped is recorded by the tags and the GitHub
+    // releases. A date or an "unreleased" marker here is a second answer to
+    // that question, kept by hand, and it is the one that goes stale.
+    const changelog = readFileSync(join(process.cwd(), 'CHANGELOG.md'), 'utf8');
+    const headings = changelog.split('\n').filter(l => l.startsWith('## '));
+    assert.ok(headings.length > 0, 'the changelog has version headings');
+    for (const h of headings) {
+      assert.match(h, /^## \[[0-9]+\.[0-9]+\.[0-9]+\]$/, `heading carries only a version: ${h}`);
+    }
+  });
+
+  test('the changelog section for the current version is not empty', () => {
+    // An empty section passes the heading check and produces a release with
+    // no notes, which the workflow refuses — but only at release time.
+    const { skill } = reportedVersions();
+    const changelog = readFileSync(join(process.cwd(), 'CHANGELOG.md'), 'utf8');
+    const after = changelog.split(`\n## [${skill}]\n`)[1] || '';
+    const body = after.split(/\n## \[/)[0].trim();
+    assert.ok(body.length > 0, `the "## [${skill}]" section has no content`);
+  });
+
   test('session-format.md states no version of its own', () => {
     // It used to restate SKILL.md exactly, which was a copy that earned
     // nothing and drifted like any other. Keep it that way.

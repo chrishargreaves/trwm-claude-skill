@@ -31,7 +31,7 @@ import { pathToFileURL } from 'node:url';
  * in three places (here, SKILL.md and references/session-format.md) and a
  * test asserts the three agree, so a bump cannot be applied to only one.
  */
-const SKILL_VERSION = '0.19.0';
+const SKILL_VERSION = '0.20.0';
 
 /* The session-state version this packager targets. See
  * references/session-format.md for what to do when the helper moves on. */
@@ -53,6 +53,16 @@ const UNCERTAINTY_SOURCES = [
   'Environmental', 'Process', 'Data', 'Methodology', 'Knowledge',
   'Tools', 'Expert', 'Semantics', 'Probabilities',
 ];
+
+/* Two results whose mitigations largely coincide were probably one result. The
+ * threshold is set where it reports something a person would act on and stays
+ * quiet otherwise: a result that shares most of its remedies with another is
+ * worth a second look, one that shares half is not. The floor exists because
+ * containment is meaningless on a set of two, where a single shared mitigation
+ * is already half of it. Both are judgement calls made once here rather than
+ * left to the reader of every draft. */
+const RESULT_OVERLAP_LIMIT = 0.7;
+const MIN_RESULT_MITIGATIONS = 3;
 
 /* The keys importFromFile() will accept. Anything else is silently dropped by
  * the helper, so emitting it is at best noise. */
@@ -1145,6 +1155,72 @@ export function selfCheck(session) {
 }
 
 /**
+ * Advisory checks about how the draft is shaped, rather than whether the file
+ * is sound. Separate from selfCheck() for the same reason knowledgeBaseChecks()
+ * is: `--check` exists to diagnose a session that will not load, and a question
+ * about the result list is not a defect in the file. Running it there would
+ * make a valid session exit 1.
+ */
+export function draftingChecks(session) {
+  const problems = [];
+  // A result is drafting scaffolding. Nothing downstream records it and every
+  // weakness lands on the technique whatever result it was gathered under, so
+  // a result's only justification is that asking about that output surfaced
+  // failures the other results did not. That is visible once the mitigations
+  // exist and not before — stage 4's tests are applied while the list is being
+  // proposed, when there is no evidence to test against — so this is the check
+  // that has something behind it, and it is deliberately retrospective.
+  const mitsByResult = new Map();
+  for (const [i, w] of session.aggregatedWeaknesses.entries()) {
+    const keys = (session.mitigations[String(i)] || []).map(m => normMitKey(m.text));
+    for (const r of w.sourceResults || []) {
+      if (!mitsByResult.has(r)) mitsByResult.set(r, new Set());
+      for (const k of keys) mitsByResult.get(r).add(k);
+    }
+  }
+  const withMits = [...mitsByResult.keys()];
+  if (withMits.length > 1) {
+    for (const id of withMits) {
+      const mine = mitsByResult.get(id);
+      if (mine.size < MIN_RESULT_MITIGATIONS) continue;
+      const elsewhere = new Set();
+      for (const other of withMits) {
+        if (other === id) continue;
+        for (const k of mitsByResult.get(other)) elsewhere.add(k);
+      }
+      if ([...mine].every(k => elsewhere.has(k))) {
+        problems.push(
+          `every mitigation under ${id} also appears under another result, so ${id} ` +
+          `produced nothing the others did not. A result costs six prompts and is not ` +
+          `recorded anywhere downstream, so consider whether it is a separate result.`
+        );
+      }
+    }
+    for (let a = 0; a < withMits.length; a++) {
+      for (let b = a + 1; b < withMits.length; b++) {
+        const A = mitsByResult.get(withMits[a]);
+        const B = mitsByResult.get(withMits[b]);
+        if (A.size < MIN_RESULT_MITIGATIONS || B.size < MIN_RESULT_MITIGATIONS) continue;
+        const shared = [...A].filter(k => B.has(k)).length;
+        const inA = shared / A.size;
+        const inB = shared / B.size;
+        if (Math.max(inA, inB) < RESULT_OVERLAP_LIMIT) continue;
+        const [narrow, wide, ratio] = inA >= inB
+          ? [withMits[a], withMits[b], inA]
+          : [withMits[b], withMits[a], inB];
+        problems.push(
+          `${Math.round(ratio * 100)}% of the mitigations under ${narrow} also appear ` +
+          `under ${wide}. Two results whose remedies are largely the same were probably ` +
+          `one result, or are two techniques rather than two outputs of one — see ` +
+          `parentTechnique.`
+        );
+      }
+    }
+  }
+  return problems;
+}
+
+/**
  * Checks that need the knowledge base, and are therefore opt-in.
  *
  * The skill's central rule is that every identifier comes from a lookup and
@@ -1693,7 +1769,7 @@ async function main(argv) {
     throw err;
   }
 
-  const problems = selfCheck(session);
+  const problems = [...selfCheck(session), ...draftingChecks(session)];
   let verified = new Set();
   if (kbSource) {
     try {

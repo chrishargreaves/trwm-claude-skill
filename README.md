@@ -209,9 +209,30 @@ point at the cause. The script verifies its own output before reporting
 success. The version in the filename is read from the skill rather than passed
 in, so an archive cannot be mislabelled.
 
+### Publishing a GitHub release
+
+```bash
+# 1. set SKILL_VERSION in skills/trwm-draft-submission/package_session.mjs
+npm run set-version                   # propagates it to SKILL.md, README, package.json
+# 2. write the "## [<version>]" section in CHANGELOG.md
+npm test                              # fails if any of those disagree
+# 3. commit, then:
+git tag v<version> && git push --tags
+```
+
+`.github/workflows/release.yml` does the rest: it runs the suite, refuses a tag
+that disagrees with the version the packager reports, refuses one with no
+changelog section, builds the archive and publishes the release with that
+section as the notes and the zip attached.
+
+Changelog headings carry the version and nothing else. Whether a version
+shipped is recorded by the tags and the releases, which is the only place that
+can answer it correctly — a date written in the changelog says when the notes
+were written, not when anyone could install the thing.
+
 ## Versions
 
-Skill version 0.19.0, targeting TRWM SOLVE-IT Helper 3.8.0, which is the
+Skill version 0.20.0, targeting TRWM SOLVE-IT Helper 3.8.0, which is the
 version currently deployed at <https://trwm.hargs.co.uk/>. The packager stamps
 the targeted version into the `version` field of every session file it writes.
 
