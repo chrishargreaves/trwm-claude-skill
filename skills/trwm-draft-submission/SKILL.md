@@ -5,7 +5,7 @@ description: Draft a SOLVE-IT knowledge base submission — a technique, its res
 
 # Draft a TRWM submission
 
-**Skill version 0.18.0.** Targets TRWM SOLVE-IT Helper 3.8.0. Run
+**Skill version 0.19.0.** Targets TRWM SOLVE-IT Helper 3.8.0. Run
 `node <skill-dir>/package_session.mjs --version` to check what a given copy
 is. Both numbers are set in `package_session.mjs` and copied here by
 `npm run set-version` in the skill's repository, so this line is derived rather
@@ -440,6 +440,17 @@ distinguishes it, and record why in the companion note.
 
 ### The prompts
 
+**One class at a time is the process.** Put a single prompt, wait, take the
+answer, then move to the next. Six prompts for one result is six exchanges and
+that is the intended cost: the classes work by making a person consider one
+kind of failure at a time, and six questions in a single message get skimmed as
+one question. It is the difference between a systematic pass and a request for
+whatever comes to mind.
+
+If the user asks for them together, that is their call — do it, and say once
+that it departs from the systematic pass. Do not decide to batch on their
+behalf because it seems more efficient.
+
 For each result, and then for each of the six error classes in turn:
 
 1. **State the prompt** — the error class, and the question it asks (the table
@@ -535,6 +546,27 @@ base entry has no way to tell which is which.
 
 The judgement is the user's. Your part is to make the offer, and to name the
 causes you would cut yourself and why.
+
+### Then say what this implies about its neighbours
+
+Stage 1 found the nearest existing techniques. Nothing has looked at them since,
+and by now the draft says something about them.
+
+Go back through the weaknesses that survived and ask which would apply, as
+written or nearly so, to a neighbour. Report the count and name the technique:
+
+> Ten of the thirteen weaknesses here apply just as well to DFT-1100 (Extract
+> metadata from within images), which currently records none.
+
+This is not a request to draft weaknesses for the neighbour, and it is not
+scope creep — that would be a separate submission. It is that a reviewer will
+notice, and it is better coming from the submission than from them. It also
+tells the project something it cannot see from any single entry: where a
+technique is bare because nobody has looked at it, rather than because it has
+no weaknesses.
+
+Put the observation in the rationale, and say it to the user in case they want
+to raise it separately.
 
 ### And put back the decisions you took alone
 
@@ -779,29 +811,27 @@ later. Do not invent a `DFCite-` id for a new source.
 
 ## Stage 9 — Package
 
-1. **Propose a location for the session file before writing anything.** One
-   file is delivered, `<name>-session.json`, and an exported bundle joins it
-   later. Do not drop it into whatever directory the conversation happens to
-   be running in; a workspace root that collects several repositories is a
-   particularly poor choice. Say where you propose to put it and take the
-   user's answer.
+1. **Where the files go depends on where you are running** — see "Where this
+   skill is running" at the top. The two cases differ in whether there is a
+   location to choose at all.
 
-   The draft and the companion note are working files. Write them to a
-   `working/` subdirectory of that same location, as `<name>-draft.json` and
-   `<name>-rationale.md`. They are not delivered and are not listed as
-   outputs.
+   **On a real filesystem.** Propose a directory for the session file and take
+   the user's answer before writing anything. Do not drop it into whatever
+   directory the conversation happens to be running in; a workspace root that
+   collects several repositories is a particularly poor choice. Write the draft
+   and the companion note to a `working/` subdirectory of it, as
+   `<name>-draft.json` and `<name>-rationale.md`. They are durable there, so
+   they are not offered at the end — mention where they are once, in a line, at
+   step 6.
 
-   Whether that makes them safe depends on where you are running — see "Where
-   this skill is running" at the top. On a real filesystem it does. In an
-   ephemeral container it does not, and the working files have to be offered
-   at the end if they are to survive at all. Not delivered and not saved are
-   different things, and only the first is ever wanted.
+   **In an ephemeral container.** There is no location to propose: the session
+   file is handed to the user, and that is the delivery. Write the working
+   files wherever the container allows, and offer them at the end, because
+   handing them over is the only way they survive.
 
-   Write them as they are produced, not at the end. An interrupted run should
-   leave a draft that matches how far it got.
-
-   Say once, at the end, where the working files are, in a single line. Do not
-   list them as though they were results.
+   Either way the working files are not deliverables and are not listed as
+   outputs. Write them as they are produced, not at the end, so an interrupted
+   run leaves a draft that matches how far it got.
 
 2. **Fill in `rationale` in the draft.** The session format carries a
    free-text `rationale` field, and the helper puts it into the exported
@@ -810,11 +840,24 @@ later. Do not invent a `DFCite-` id for a new source.
 
    It is a condensed form of the rationale note, not a copy: what the
    technique was scoped to and what was excluded, the causes cut at stage 6
-   and why, the error classes considered that came to nothing, and any
-   decisions taken by default that the user did not overturn. A few sentences
+   and why, the error classes considered that came to nothing, what the
+   weakness set implies about neighbouring techniques, and any decisions taken
+   by default that the user did not overturn. A few sentences
    to a few paragraphs. The note stays as the full record.
 
-3. Run the packager, giving it the knowledge base so it can check the
+3. **Ask who the submission is from.** The `authors` field is not filled in by
+   anything else, and a submission that arrives with no author attached is
+   harder for a reviewer to follow up. Ask once whether the user wants their
+   name on it, in whatever form they use for published work, and take no for an
+   answer.
+
+   **Then add `trwm-claude-skill` as a further author, whether or not they gave
+   a name.** Not for credit — so that a reviewer reading the entry later can
+   tell it was drafted through this skill rather than written by hand, and can
+   weigh it accordingly. That is provenance about how the submission was made,
+   and it is the kind of thing that is impossible to reconstruct afterwards.
+
+4. Run the packager, giving it the knowledge base so it can check the
    identifiers you used:
 
    ```bash
@@ -842,7 +885,7 @@ later. Do not invent a `DFCite-` id for a new source.
    checks did not run**. An absent check the user knows about is a different
    thing from one they assume happened.
 
-4. Report what it prints, distinguishing the two kinds of line:
+5. Report what it prints, distinguishing the two kinds of line:
 
    - `check:` — a problem. Not fatal, but a weakness with no mitigation or a
      result with no output class is usually an omission rather than a
@@ -855,7 +898,7 @@ later. Do not invent a `DFCite-` id for a new source.
      being reused under an existing `DFM-` id. Show these and let the user
      check them; do not treat them as errors.
 
-5. Tell the user the one file is ready, and how to load it: open the TRWM
+6. Tell the user the one file is ready, and how to load it: open the TRWM
    helper at <https://trwm.hargs.co.uk/>, choose **Import from File**, choose
    the file, and confirm the session name. Name the session file and nothing
    else. Listing the working files here is what makes a one-file result look

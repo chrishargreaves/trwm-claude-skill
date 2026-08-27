@@ -11,6 +11,48 @@ minor and patch numbers, so 1.8.0 became 0.8.0. Nothing was ever released under
 the old numbering — there are no published archives and no GitHub releases — so
 the renumbering rewrites no history that anyone else can see.
 
+## [0.19.0] — unreleased
+
+Four changes from an unattended run of the skill against a real proposal —
+metadata inside video and audio files — drafted end to end with a separate
+agent playing the practitioner. The run produced a session file that imports
+and validates; what it produced besides that was these.
+
+**The submission now says what it implies about its neighbours.** Stage 1 finds
+the nearest existing techniques and nothing looked at them again, yet by the end
+the draft says something about them. In the run, ten of the thirteen weaknesses
+applied just as well to DFT-1100 (Extract metadata from within images), which
+records none — so the submission implied its sibling was substantially
+incomplete, and never said so. Stage 6 now asks for that count by name, in the
+rationale and to the user. It is not a request to draft weaknesses for the
+neighbour; it is that a reviewer will notice, and it tells the project where an
+entry is bare because nobody has looked at it rather than because there is
+nothing to find.
+
+**One error class at a time is stated as the process rather than implied.** The
+instruction was six prompts "in turn", while the skill elsewhere insists on
+economy — tables for reviewable sets, deciding rather than asking twice. Read
+literally it is six exchanges per result; read for its spirit it is one message.
+Both were defensible, which means the rule was not doing its job. It now says
+the cost is intended, because the classes work by making a person consider one
+kind of failure at a time and six questions in one message get skimmed as one.
+A user may ask for them together and that is their call; the drafter may not
+decide it on their behalf.
+
+**Stage 9 asks who the submission is from.** `authors` was never mentioned in
+`SKILL.md` and the run shipped a session with the field empty. The skill now
+asks once, takes no for an answer, and adds `trwm-claude-skill` as a further
+author either way — not for credit, but so a reviewer reading the entry later
+can tell it was drafted through this skill and weigh it accordingly.
+
+**The location step is split by environment.** It told the drafter to propose a
+directory and take the user's answer, which only makes sense where there is a
+filesystem to choose in. In the browser and desktop applications there is no
+location to propose: the session file is handed over and that is the delivery.
+The two cases are now separate, and the instruction to say where the working
+files are has moved to the step that tells the user things rather than the step
+that picks a location.
+
 ## [0.18.0] — unreleased
 
 **`SKILL.md` is now tested.** It is instructions to an agent, and most of it is

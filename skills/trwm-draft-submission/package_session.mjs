@@ -31,7 +31,7 @@ import { pathToFileURL } from 'node:url';
  * in three places (here, SKILL.md and references/session-format.md) and a
  * test asserts the three agree, so a bump cannot be applied to only one.
  */
-const SKILL_VERSION = '0.18.0';
+const SKILL_VERSION = '0.19.0';
 
 /* The session-state version this packager targets. See
  * references/session-format.md for what to do when the helper moves on. */

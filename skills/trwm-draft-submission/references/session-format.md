@@ -31,7 +31,10 @@ attaches mitigations to the wrong weaknesses.
 ```jsonc
 {
   "sessionName": "File type associations",      // optional; defaults to the technique name
-  "authors": ["A. Person"],                     // optional
+  "authors": ["A. Person", "trwm-claude-skill"],// optional; the skill asks the user
+                                                // whether they want their name on it, and
+                                                // always adds itself so a reviewer can tell
+                                                // the submission was drafted through it
   "resultsNotes": "",                           // optional free text
   "rationale": "",                              // optional; why the submission is shaped as it is.
                                                 // The helper carries it into the exported bundle
