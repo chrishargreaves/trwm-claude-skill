@@ -75,10 +75,11 @@ front matter fails to load, and the failure does not say why.
 ### What it needs
 
 - **Node 18 or later**, and nothing else. The skill installs no dependencies.
-- **A way to reach the knowledge base**, which is either a SOLVE-IT MCP server
-  or network access to <https://data.solveit-df.org/solve-it.json>. Without one
-  of those the skill stops before drafting rather than writing a submission
-  that may duplicate something.
+- **A way to reach the knowledge base**, which is either a
+  [SOLVE-IT MCP server](https://github.com/CKE-Proto/mcp_solve-it) or network
+  access to <https://data.solveit-df.org/solve-it.json>. Without one of those
+  the skill stops before drafting rather than writing a submission that may
+  duplicate something.
 - **Reachable ontology namespaces**, to confirm a CASE/UCO or SOLVE-IT class
   exists. Where they are unreachable the skill says so and leaves the field
   empty rather than guessing.
@@ -125,7 +126,7 @@ Rebuilding a session from memory loses the work; repairing does not.
 
 ## Versions
 
-Skill version 0.20.0, targeting TRWM SOLVE-IT Helper 3.8.0, which is the
+Skill version 0.20.1, targeting TRWM SOLVE-IT Helper 3.8.0, which is the
 version currently deployed at <https://trwm.hargs.co.uk/>. The packager stamps
 the targeted version into the `version` field of every session file it writes,
 so a session file records which application it was written for.

@@ -5,7 +5,7 @@ description: Draft a SOLVE-IT knowledge base submission — a technique, its res
 
 # Draft a TRWM submission
 
-**Skill version 0.20.0.** Targets TRWM SOLVE-IT Helper 3.8.0. Run
+**Skill version 0.20.1.** Targets TRWM SOLVE-IT Helper 3.8.0. Run
 `node <skill-dir>/package_session.mjs --version` to check what a given copy
 is. Both numbers are set in `package_session.mjs` and copied here by
 `npm run set-version` in the skill's repository, so this line is derived rather
@@ -180,8 +180,9 @@ and offering them is what turns one deliverable into four.
 
 In order of preference:
 
-1. **The SOLVE-IT MCP server**, if tools named `solveit_search`,
-   `solveit_get_technique` and similar are available. Preferred.
+1. **The [SOLVE-IT MCP server](https://github.com/CKE-Proto/mcp_solve-it)**, if
+   tools named `solveit_search`, `solveit_get_technique` and similar are
+   available. Preferred.
 2. **The public compiled data**, otherwise:
    `https://data.solveit-df.org/solve-it.json` (also available as
    `solve-it.ttl`). Both are rebuilt daily.

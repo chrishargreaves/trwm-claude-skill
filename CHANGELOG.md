@@ -18,6 +18,19 @@ when anyone could install the thing. Releasing is `git tag v<version>` and a
 push, and `.github/workflows/release.yml` does the rest — it refuses a tag that
 disagrees with the version the packager reports, or one with no section here.
 
+## [0.20.1]
+
+**The skill now says where to get the MCP server it tells you to prefer.**
+Reaching the knowledge base lists the SOLVE-IT MCP server first and in
+preference to the compiled data, identifying it only by the tool names it
+exposes, which is enough to recognise one that is already connected and no help
+at all in obtaining one. It now links to
+<https://github.com/CKE-Proto/mcp_solve-it>.
+
+The README was reorganised at the same time, around installing and using rather
+than around maintaining. Everything needed only to work on the skill moved to
+`dev_notes.md`. That is a repository change and ships in no archive.
+
 ## [0.20.0]
 
 Three changes from a second unattended run, again with a separate agent playing
